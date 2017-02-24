@@ -105,6 +105,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean stop = false;
     private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
     static ArrayList<MarkerData> markerDataList = new ArrayList<>();
+    static ArrayList<MarkerData> recentDataList = new ArrayList<>();
     TrackerAlarmReceiver alarm = new TrackerAlarmReceiver();
     private boolean destinationReached  = false;
     private PopupWindow pw;
@@ -173,6 +174,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             try {
                 markerDataList = (ArrayList<MarkerData>) InternalStorage.readObject(this, "myFile"); // Retrieve the list from internal storage
+            } catch (IOException e) {
+                Log.e("File Read error: ", e.getMessage());
+            } catch (ClassNotFoundException e) {
+                Toast.makeText(this, "Failed to retrieve list from file", Toast.LENGTH_SHORT).show();
+                Log.e("File Read error: ", e.getMessage());
+            }
+
+
+            try {
+                recentDataList = (ArrayList<MarkerData>) InternalStorage.readObject(this, "myFile"); // Retrieve the list from internal storage
             } catch (IOException e) {
                 Log.e("File Read error: ", e.getMessage());
             } catch (ClassNotFoundException e) {

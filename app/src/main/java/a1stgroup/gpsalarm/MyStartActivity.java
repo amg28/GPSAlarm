@@ -28,6 +28,7 @@ import java.util.Comparator;
 
 import static a1stgroup.gpsalarm.ListActivity.selectedMarkerData;
 import static a1stgroup.gpsalarm.MapsActivity.markerDataList;
+import static a1stgroup.gpsalarm.MapsActivity.recentDataList;
 import static android.R.id.list;
 
 /**
@@ -48,11 +49,13 @@ public class MyStartActivity extends AppCompatActivity {
 
         try {
             markerDataList = (ArrayList<MarkerData>) InternalStorage.readObject(this, "myFile");
+            recentDataList = (ArrayList<MarkerData>) InternalStorage.readObject(this, "myFile2");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
 
         if (markerDataList.size() == 0) {
             Intent intent = new Intent(this, MapsActivity.class);
@@ -64,8 +67,9 @@ public class MyStartActivity extends AppCompatActivity {
             setContentView(R.layout.activity_start);
 
             final ArrayAdapter myAdapter = new MyCustomizedAdapter(this, MapsActivity.markerDataList);
+            final ArrayAdapter myAdapter2 = new MyCustomizedAdapter(this, MapsActivity.recentDataList);
 
-            ListView listView = (ListView) findViewById(R.id.listView);
+            final ListView listView = (ListView) findViewById(R.id.listView);
 
             Collections.sort(markerDataList, new Comparator<MarkerData>() {
 
@@ -91,6 +95,41 @@ public class MyStartActivity extends AppCompatActivity {
                     startActivity(myIntent);
                 }
             });
+
+            final ListView listViewNew = (ListView) findViewById(R.id.listViewRecent);
+           // listViewNew.setAdapter(null);
+            listViewNew.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    //myAdapter2.clear();
+                     selectedMarkerData = (MarkerData) myAdapter.getItem(i);
+                   // myAdapter2.insert(myAdapter.getItem(i),0);
+
+                   // listViewNew.setAdapter(myAdapter2);
+                    Toast.makeText(MyStartActivity.this, "Alarm Set: " + selectedMarkerData.getName(), Toast.LENGTH_SHORT).show();
+                    Intent myIntent = new Intent(MyStartActivity.this, MapsActivity.class);
+                    startActivity(myIntent);
+                }
+            });
+
+
+
+            myListView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    recentDataList.clear();
+
+                    recentDataList.add((MarkerData) myAdapter.getItem(i));
+                    selectedMarkerData = (MarkerData) myAdapter.getItem(i);
+                    saveRecentDataList();
+//                    myAdapter2.insert(myAdapter.getItem(i),0);
+
+                    listViewNew.setAdapter(myAdapter2);
+                    Toast.makeText(MyStartActivity.this, "Alarm Set: " + selectedMarkerData.getName(), Toast.LENGTH_SHORT).show();
+                    Intent myIntent = new Intent(MyStartActivity.this, MapsActivity.class);
+                    startActivity(myIntent);
+                }
+                });
 
             myListView2.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
@@ -131,6 +170,18 @@ public class MyStartActivity extends AppCompatActivity {
     private boolean saveMarkerDataList() {
         try {
             InternalStorage.writeObject(this, "myFile", MapsActivity.markerDataList);
+            return true;
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to save alarm", Toast.LENGTH_SHORT).show();
+            Log.e("IOException", e.getMessage());
+        }
+        return false;
+    }
+
+
+    private boolean saveRecentDataList() {
+        try {
+            InternalStorage.writeObject(this, "myFile2", MapsActivity.recentDataList);
             return true;
         } catch (IOException e) {
             Toast.makeText(this, "Failed to save alarm", Toast.LENGTH_SHORT).show();
